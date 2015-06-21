@@ -1,5 +1,3 @@
-use_inline_resources
-
 def whyrun_supported?
   true
 end
@@ -39,17 +37,17 @@ action :mount do
     end
   end
 
-  visible = new_resource.visible_path,
-            crypted = new_resource.encrypted_path,
+  visible = new_resource.visible_path
+  crypted = new_resource.encrypted_path
 
-            [visible, crypted].each do |dir_name|
-              directory dir_name do
-                owner new_resource.owner
-                group new_resource.group
-                recursive true
-              end
-              new_resource.updated_by_last_action(true)
-            end
+  [visible, crypted].each do |dir_name|
+    directory dir_name do
+      owner new_resource.owner
+      group new_resource.group
+      recursive true
+    end
+    new_resource.updated_by_last_action(true)
+  end
 
   execute "EncFS mount <#{visible}>" do
     execute "echo '#{new_resource.password} | encfs --standard --stdinpass #{crypted} #{visible}"
