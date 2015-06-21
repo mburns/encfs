@@ -50,7 +50,7 @@ action :mount do
   end
 
   execute "EncFS mount <#{visible}>" do
-    execute "echo '#{new_resource.password} | encfs --standard --stdinpass #{crypted} #{visible}"
+    command "echo '#{new_resource.password} | encfs --standard --stdinpass #{crypted} #{visible}"
     not_if "mountpoint #{visible}"
   end
   new_resource.updated_by_last_action(true)
