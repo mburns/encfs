@@ -21,5 +21,4 @@ end
 
 # Information
 
-* Repository: https://github.com/hw-cookbooks/encfs
-* IRC: Freenode @ #heavywater
+* Repository: https://github.com/mburns/encfs
