@@ -11,7 +11,7 @@ def load_current_resource
     new_resource.encrypted_path(
       ::File.join(
         node['encfs']['directories']['crypt'],
-        Digest::SHA.hexdigest(new_resource.visible_path)
+        Digest::SHA256.hexdigest(new_resource.visible_path)
       )
     )
   end
@@ -28,17 +28,18 @@ end
 action :mount do
   setup_encfs
 
-  unless new_resource.password
-    run_context.include_recipe 'encfs::passwords'
-    if (fs_pass = node.run_state['encfs'][new_resource.visible_path])
-      new_resource.password fs_pass
-    else
-      fail "EncFS requires a password for mounting directories! (path: #{new_resource.visible_path})"
-    end
-  end
-
   visible = new_resource.visible_path
   crypted = new_resource.encrypted_path
+  password = new_resource.password
+
+  unless password
+    run_context.include_recipe 'encfs::passwords'
+    if (fs_pass = node.run_state['encfs'][visible])
+      password fs_pass
+    else
+      fail "EncFS requires a password for mounting directories! (path: #{visible})"
+    end
+  end
 
   [visible, crypted].each do |dir_name|
     directory dir_name do
@@ -50,7 +51,7 @@ action :mount do
   end
 
   execute "EncFS mount <#{visible}>" do
-    command "echo '#{new_resource.password} | encfs --standard --stdinpass #{crypted} #{visible}"
+    command "echo '#{password}' | encfs --standard --stdinpass #{crypted} #{visible}"
     not_if "mountpoint #{visible}"
   end
   new_resource.updated_by_last_action(true)
