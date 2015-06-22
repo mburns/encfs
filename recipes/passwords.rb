@@ -1,7 +1,5 @@
 # load encfs passwords from encrypted data_bags
-unless node.run_state['encfs']
-  next unless node['encfs']['passwords']['data_bag']['enabled']
-
+unless node.run_state['encfs'] && ! node['encfs']['passwords']['data_bag']['enabled']
   begin
     unless node['encfs']['passwords']['data_bag']['encrypted']
       bag = data_bag_item(

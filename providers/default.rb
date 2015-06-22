@@ -3,10 +3,6 @@ def whyrun_supported?
 end
 
 def load_current_resource
-  unless new_resource.visible_path
-    new_resource.visible_path new_resource.name
-  end
-
   unless new_resource.encrypted_path
     new_resource.encrypted_path(
       ::File.join(
@@ -20,9 +16,14 @@ end
 def setup_encfs
   directory node['encfs']['directories']['crypt'] do
     recursive true
+    owner 'root'
+    group 'root'
   end
+  new_resource.updated_by_last_action(true)
 
+  package 'fuse'
   package 'encfs'
+  new_resource.updated_by_last_action(true)
 end
 
 action :mount do
@@ -58,11 +59,11 @@ action :mount do
 end
 
 action :unmount do
-  point = new_resource.visible_path
+  setup_encfs
 
-  mount "EncFS unmount <#{point}>" do
-    path point
-    action :umount
+  execute "EncFS unmount <#{new_resource.visible_path}>" do
+    command "fusermount -u #{new_resource.visible_path}"
+    not_if "grep '#{new_resource.visible_path}' /etc/mtab"
   end
   new_resource.updated_by_last_action(true)
 end
@@ -84,3 +85,7 @@ action :destroy do
     new_resource.updated_by_last_action(true)
   end
 end
+
+alias_method :action_create, :action_mount
+alias_method :action_umount, :action_unmount
+alias_method :action_delete, :action_destroy
