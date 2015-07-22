@@ -1,4 +1,4 @@
-actions :mount, :unmount, :destroy
+actions :mount, :unmount, :destroy, :reverse
 default_action :mount
 
 attribute :encrypted_path, kind_of: String

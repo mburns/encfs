@@ -83,3 +83,17 @@ action :destroy do
     new_resource.updated_by_last_action(true)
   end
 end
+
+action :reverse do
+  setup_encfs
+
+  visible = new_resource.visible_path
+  crypted = new_resource.encrypted_path
+  password = new_resource.password
+
+  execute "EncFS reverse <#{visible}>" do
+    command "echo '#{password}' | encfs --reverse --standard --stdinpass #{crypted} #{visible}"
+    only_if "mountpoint #{visible}"
+  end
+  new_resourcne.updated_by_last_action(true)
+end
